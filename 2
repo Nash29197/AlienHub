@@ -1,0 +1,1407 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+WindUI:AddTheme({
+    Name = "Alien",
+    
+    Accent = Color3.fromHex("#18181b"),
+    Background = Color3.fromHex("#101010"), -- Accent
+    BackgroundTransparency = 0,
+    Outline = Color3.fromHex("#FFFFFF"),
+    Text = Color3.fromHex("#FFFFFF"),
+    Placeholder = Color3.fromHex("#7a7a7a"), 
+    Button = Color3.fromHex("#52525b"),
+    Icon = WindUI:Gradient({
+        ["0"] = { Color = Color3.fromHex("#30ff6a"), Transparency = 0 },
+        ["100"] = { Color = Color3.fromHex("#4A4A4A"), Transparency = 0 },
+    }, { Rotation = 0 }),  
+    
+    Hover = Color3.fromHex("#FFFFFF"), -- Text
+    
+    WindowBackground = Color3.fromHex("101010"), -- Background
+    WindowShadow = Color3.fromHex("000000"),
+    
+    DialogBackground = Color3.fromHex("#101010"), -- Background
+    DialogBackgroundTransparency = 0, -- BackgroundTransparency
+    DialogTitle = Color3.fromHex("#FFFFFF"), -- Text
+    DialogContent = Color3.fromHex("#FFFFFF"), -- Text
+    DialogIcon = Color3.fromHex("#a1a1aa"), -- Icon
+    
+    WindowTopbarButtonIcon = WindUI:Gradient({
+        ["0"] = { Color = Color3.fromHex("#30ff6a"), Transparency = 0 },
+        ["100"] = { Color = Color3.fromHex("#4A4A4A"), Transparency = 0 },
+    }, { Rotation = 0 }),  
+    WindowTopbarTitle = WindUI:Gradient({
+        ["0"] = { Color = Color3.fromHex("#30ff6a"), Transparency = 0 },
+        ["100"] = { Color = Color3.fromHex("#4A4A4A"), Transparency = 0 },
+    }, { Rotation = 0 }),
+    WindowTopbarAuthor = WindUI:Gradient({
+        ["0"] = { Color = Color3.fromHex("#30ff6a"), Transparency = 0 },
+        ["100"] = { Color = Color3.fromHex("#4A4A4A"), Transparency = 0 },
+    }, { Rotation = 0 }),
+    WindowTopbarIcon = Color3.fromHex("FFFFFF"), -- Text
+    
+    TabBackground = Color3.fromHex("#FFFFFF"), -- Text
+    TabTitle = Color3.fromHex("#FFFFFF"),  
+    TabIcon = WindUI:Gradient({
+        ["0"] = { Color = Color3.fromHex("#30ff6a"), Transparency = 0 },
+        ["100"] = { Color = Color3.fromHex("#4A4A4A"), Transparency = 0 },
+    }, { Rotation = 0 }),    
+    
+    ElementBackground = Color3.fromHex("#FFFFFF"), -- Text
+    ElementTitle = Color3.fromHex("#FFFFFF"),
+    ElementDesc = Color3.fromHex("#FFFFFF"), -- Text
+    ElementIcon = Color3.fromHex("#a1a1aa"), -- Icon 
+    
+    PopupBackground = Color3.fromHex("#101010"), -- Background
+    PopupBackgroundTransparency = 0, -- BackgroundTransparency
+    PopupTitle = WindUI:Gradient({
+        ["0"] = { Color = Color3.fromHex("#30ff6a"), Transparency = 0 },
+        ["100"] = { Color = Color3.fromHex("#4A4A4A"), Transparency = 0 },
+    }, { Rotation = 0 }),
+    PopupContent = Color3.fromHex("#FFFFFF"), -- Text
+    PopupIcon = Color3.fromHex("#a1a1aa"), -- Icon
+    
+})
+
+local Window = WindUI:CreateWindow({
+    Title = "Alien",
+    Icon = "rbxassetid://110242772816568",
+    IconSize = 40,
+    Author = "By @bos87k || Plants Vs Brainrots",
+    Folder = "AlienConfig",
+    Transparent = true,
+    Theme = "Alien",
+    User = {
+        Enabled = true,
+        Anonymous = false,
+        Callback = function()
+        end,
+    },
+})
+
+Window:Tag({
+    Title = "Bate",
+    Color = Color3.fromHex("#30ff6a"),
+    Radius = 13,
+})
+
+Window:EditOpenButton({
+    Title = "Alien",
+    Icon = "rbxassetid://110242772816568",
+    CornerRadius = UDim.new(0,16),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(
+        Color3.fromHex("30ff6a"), 
+        Color3.fromHex("4A4A4A")
+    ),
+    OnlyMobile = false,
+    Enabled = true,
+    Draggable = true,
+})
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HttpService = game:GetService("HttpService")
+local VirtualUser = game:GetService("VirtualUser")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local Backpack = Player:WaitForChild("Backpack")
+
+game:GetService('Players').LocalPlayer.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
+end)
+
+local InfoTab = Window:Tab({Title = "Information", Icon = "info" })
+local Section = InfoTab:Section({Title = "JOIN Discord:", Icon = "info",TextXAlignment = "Left",TextSize = 17,})
+
+local InviteCode = "ZJwTMvkV2z"
+local DiscordAPI = "https://discord.com/api/v10/invites/" .. InviteCode .. "?with_counts=true&with_expiration=true"
+
+local Response
+local ErrorMessage = nil
+
+xpcall(function()
+    Response = game:GetService("HttpService"):JSONDecode(WindUI.Creator.Request({
+        Url = DiscordAPI,
+        Method = "GET",
+        Headers = {
+            ["Accept"] = "application/json"
+        }
+    }).Body)
+end, function(err)
+    warn("err fetching discord info: " .. tostring(err))
+    ErrorMessage = tostring(err)
+    Response = nil
+end)
+
+if Response and Response.guild then
+    local ParagraphConfig = {
+        Title = Response.guild.name,
+        Desc =
+            ' <font color="#52525b">•</font> Member Count: ' .. tostring(Response.approximate_member_count) ..
+            '\n <font color="#16a34a">•</font> Online Count: ' .. tostring(Response.approximate_presence_count)
+        ,
+        Image = "https://cdn.discordapp.com/icons/" .. Response.guild.id .. "/" .. Response.guild.icon .. ".png?size=256",
+        ImageSize = 42,
+        Buttons = {
+            {
+                Icon = "link",
+                Title = "Copy Discord Invite",
+                Callback = function()
+                    pcall(function()
+                        setclipboard("https://discord.gg/" .. InviteCode)
+                    end)
+                end
+            },
+            {
+                Icon = "refresh-cw",
+                Title = "Update Info",
+                Callback = function()
+                    xpcall(function()
+                        local UpdatedResponse = game:GetService("HttpService"):JSONDecode(WindUI.Creator.Request({
+                            Url = DiscordAPI,
+                            Method = "GET",
+                        }).Body)
+                        
+                        if UpdatedResponse and UpdatedResponse.guild then
+                            DiscordInfo:SetDesc(
+                                ' <font color="#52525b">•</font> Member Count: ' .. tostring(UpdatedResponse.approximate_member_count) ..
+                                '\n <font color="#16a34a">•</font> Online Count: ' .. tostring(UpdatedResponse.approximate_presence_count)
+                            )
+                        end
+                    end, function(err)
+                        warn("err updating discord info: " .. tostring(err))
+                    end)
+                end
+            }
+        }
+    }
+    
+    if Response.guild.banner then
+        ParagraphConfig.Thumbnail = "https://cdn.discordapp.com/banners/" .. Response.guild.id .. "/" .. Response.guild.banner .. ".png?size=256"
+        ParagraphConfig.ThumbnailSize = 80
+    end
+    
+    local DiscordInfo = InfoTab:Paragraph(ParagraphConfig)
+else
+    InfoTab:Paragraph({
+        Title = "Error when receiving information about the Discord server",
+        Desc = ErrorMessage or "Unknown error occurred",
+        Image = "triangle-alert",
+        ImageSize = 26,
+        Color = "Red",
+    })
+end
+
+local PlayerTab = Window:Tab({Title = "Player",Icon = "user-round-cog",Locked = false,})
+local Section = PlayerTab:Section({ Title = "Player:",Icon = "user-round-cog",TextXAlignment = "Left",TextSize = 17,})
+
+local normalSpeed = 16
+local currentSprintSpeed = 16
+local isSprintToggled = false
+
+local function updateWalkSpeed()
+    if not Humanoid then return end
+
+    if isSprintToggled then
+        Humanoid.WalkSpeed = currentSprintSpeed
+    else
+        Humanoid.WalkSpeed = normalSpeed
+    end
+end
+
+Player.CharacterAdded:Connect(function(newCharacter)
+    Character = newCharacter
+    Humanoid = newCharacter:WaitForChild("Humanoid")
+    updateWalkSpeed()
+end)
+
+local SpeedToggle = PlayerTab:Toggle({
+    Title = "Speed",
+    Desc = "ON or OFF speed boost",
+    Default = false,
+    Flag = "SpeedToggle",
+    Callback = function(state)
+        isSprintToggled = state
+        updateWalkSpeed()
+    end
+})
+
+local SpeedSlider = PlayerTab:Slider({
+    Title = "Speed Boost",
+    Desc = "Speed boost value",
+    Step = 1,
+    Value = {Min = 16,Max = 150,Default = 16,},
+    Flag = "SpeedSlider",
+    Callback = function(value)
+        currentSprintSpeed = value
+        updateWalkSpeed()
+    end
+})
+
+local normalJumpPower = 50
+local currentJumpPower = 50
+local isJumpToggled = false
+
+local function updateJumpPower()
+    if not Humanoid then return end
+
+    if isJumpToggled then
+        Humanoid.JumpPower = currentJumpPower
+    else
+        Humanoid.JumpPower = normalJumpPower
+    end
+end
+
+Player.CharacterAdded:Connect(function(newCharacter)
+    Character = newCharacter
+    Humanoid = newCharacter:WaitForChild("Humanoid")
+    updateJumpPower()
+end)
+
+local JumpToggle = PlayerTab:Toggle({
+    Title = "Jump",
+    Desc = "ON or OFF jump boost",
+    Default = false,
+    Flag = "JumpToggle",
+    Callback = function(state)
+        isJumpToggled = state
+        updateJumpPower()
+    end
+})
+
+local JumpSlider = PlayerTab:Slider({
+    Title = "Jump Boost",
+    Desc = "Jump boost value",
+    Step = 5,
+    Value = {Min = 50,Max = 300,Default = 50,},
+    Flag = "JumpSlider",
+    Callback = function(value)
+        currentJumpPower = value
+        updateJumpPower()
+    end
+})
+
+local NoclipConnection = nil
+local isNoclipActive = false
+
+local function Noclip()
+    local Character = Player.Character or Player.CharacterAdded:Wait()
+    for _, part in ipairs(Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
+end
+
+local NoclipToggle = PlayerTab:Toggle({
+    Title = "Noclip",
+    Desc = "Wall hack",
+    Default = false,
+    Flag = "NoclipToggle",
+    Callback = function(state)
+        isNoclipActive = state
+
+        if isNoclipActive then
+            NoclipConnection = RunService.Stepped:Connect(Noclip)
+        else
+            if NoclipConnection then
+                NoclipConnection:Disconnect()
+                NoclipConnection = nil
+            end
+
+            if Player and Player.Character then
+                for _, part in ipairs(Player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end
+    end
+})
+
+local InfiniteJumpEnabled = false
+
+local InfiniteJumpToggle = PlayerTab:Toggle({
+    Title = "Infinite Jump",
+    Desc = "Can Infinite Jump",
+    Default = false,
+    Flag = "InfiniteJumpToggle",
+    Callback = function(state)
+        InfiniteJumpEnabled = state
+    end
+})
+
+RunService.Heartbeat:Connect(function()
+    if not InfiniteJumpEnabled or not Players.LocalPlayer then
+        return
+    end
+
+    local character = Players.LocalPlayer.Character
+    if not character then return end
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    if humanoid.Jump then
+        local currentState = humanoid:GetState()
+        if currentState == Enum.HumanoidStateType.Freefall or currentState == Enum.HumanoidStateType.Jumping then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end)
+
+local FarmTab = Window:Tab({Title = "Auto Farm",Icon = "house",Locked = false,})
+local Section = FarmTab:Section({ Title = "Auto Farm:",Icon = "house",TextXAlignment = "Left",TextSize = 17,})
+local Paragraph = FarmTab:Paragraph({Title = "Auto Farm Brainrots:",Desc = "Only works on private servers",ImageSize = 30,ThumbnailSize = 80,Locked = false,})
+
+local BrainrotList = {
+    Rare = {
+        "Noobini Bananini","Orangutini Ananassini","Lirili Larila","Noobini Cactusini","Pipi Kiwi","Boneca Ambalabu","Espresso Signora","Tim Cheese",
+        "Mini Cheese","Skura Skura","Orangutini Strawberrini","Trulimero Trulicina","Agarrini La Palini",
+    },
+    Epic = {
+        "Svinino Pumpkinino","Brr Brr Sunflowerim","Bambini Crostini","Bandito Bobrito","Orcalero Orcala","Svinino Bombondino","Cappuccino Assasino",
+        "Trippi Troppi","Rinoccio Verdini","Brr Brr Patapim","Alessio",
+    },
+    Legendary = {
+        "Gangster Footera","Dragonfrutina Dolphinita","Ballerina Cappuccina","Bottellini","Bananita Dolphinita","Madung","Burbaloni Lulliloli",
+        "Elefanto Cocofanto","Las Tralaleritas","Eggplantini Burbalonini",
+    },
+    Mythic = {
+        "Baby Peperoncini And Marmellata","Bombini Gussini","Frigo Camelo","Armadillo Watermelondrilo","Aerilino Armadillo",
+        "Pesto Mortioni",
+    },
+    Godly = {
+        "Constructione Tralala","Matteo","Kiwissimo","Luis Traffico","Cocotanko Giraffanto","Carnivourita Tralalerita","Giraffa Celeste",
+    },
+    Secret = {
+        "Los Mr Carrotitos","Los Tralaleritos","Conerio","Crazylone Pizalone","Controllazzo","Maestro Stuntuffo","Meowzio Sushini",
+        "Megalodino","Pepito Di Pollo","Lemowzio","Los Sekolitos","Blueberrinni Octopussini","Rexosaurus Hatcherini","El Tacorito",
+        "Hacktini Adminini","Pot Hotspot","Mela Morta","Compactaroni Diskaloni","La Mostardino","La Tomatoro","Brri Brri Bicus Dicus Bombicus",
+        "Bangello","Meowtronzio","Garamararam",
+    },
+    Limited = {
+        "Arminini Bodybuilderini","Squalo Cavallo","Bredda Ratto","Gattolini Owlini","Noobini Zombini","Frankuccino Assassino","Skellini Footera",
+        "Vamperina Cappuccina","Pumpikino Elefanto","Pumpkino Camelo","Pumpkinino Reaperina","Spooky Spiderini","Cerebrancio","Casketo","Headless Horseman",
+        "67","Telefonito Happilito","Daterini Transferino","Ring Ring Telephoneili","Televisionne Tristionne","Burgino Owlini","La Blazetto","Agua Galleone",
+    },
+    BOSS = {
+        "Hotspotini Burrito","Rhino Toasterino","Ospedale","Chef Crabacadabra","Dragon Cannelloni","Wardenelli Brickatoni","Cerberinno Hotdoggino","Snailini Discozini",
+        "Elefante Formaggio","Strawberry Camaleonte","Big Frank","Esok Sekolah","Tung Tung Tung Sahur",
+    },
+}
+
+local allBrainrotNames = {}
+local allRarities = {}
+local rarityLookup = {}
+
+for rarity, names in pairs(BrainrotList) do
+    table.insert(allRarities, rarity)
+    for _, name in ipairs(names) do
+        table.insert(allBrainrotNames, name)
+        rarityLookup[name] = rarity
+    end
+end
+table.sort(allBrainrotNames)
+table.sort(allRarities)
+
+local farmConfig = {
+    enabled = false,
+    targetNames = {},
+    targetRarities = {}
+}
+
+local brainrotsCache = {}
+local farmConnection = nil
+local lastActionTime = 0
+local actionInterval = 0.01
+
+local function getNearestBrainrot()
+    local nearest, minDist, playerPos, newCache, targetId = nil, math.huge, HumanoidRootPart.Position, {}, nil
+    for _, b in ipairs(brainrotsCache) do
+        if b and b.Parent and b:IsA("Model") and b.PrimaryPart and b:GetAttribute("ID") then
+            table.insert(newCache, b)
+            local brainrotName = b.Name
+            local brainrotRarity = rarityLookup[brainrotName]
+            local passesFilter = false
+            if #farmConfig.targetNames == 0 and #farmConfig.targetRarities == 0 then
+                passesFilter = false
+            else
+                if #farmConfig.targetNames > 0 and table.find(farmConfig.targetNames, brainrotName) then
+                    passesFilter = true
+                end
+                if not passesFilter and #farmConfig.targetRarities > 0 and brainrotRarity and table.find(farmConfig.targetRarities, brainrotRarity) then
+                    passesFilter = true
+                end
+            end
+            if passesFilter then
+                local dist = (playerPos - b.PrimaryPart.Position).Magnitude
+                if dist < minDist then
+                    minDist, nearest, targetId = dist, b, b:GetAttribute("ID")
+                end
+            end
+        end
+    end
+    brainrotsCache = newCache
+    return nearest, targetId
+end
+
+local function updateBrainrotsCache()
+    local folder = workspace.ScriptedMap:FindFirstChild("MissionBrainrots")
+    brainrotsCache = {}
+    if folder then
+        for _, b in ipairs(folder:GetChildren()) do
+            if b:IsA("Model") and b.Parent then
+                table.insert(brainrotsCache, b)
+            end
+        end
+    end
+end
+
+local function equipBat()
+    local currentTool = Character:FindFirstChildOfClass("Tool")
+    if currentTool and currentTool.Name:match("Bat") then
+        return
+    end
+    local toolToEquip = Backpack:FindFirstChild("Bat", true)
+    if not toolToEquip then
+        for _, tool in ipairs(Backpack:GetChildren()) do
+            if tool:IsA("Tool") and tool.Name:match("Bat") then
+                toolToEquip = tool
+                break
+            end
+        end
+    end
+    if toolToEquip then
+        Humanoid:EquipTool(toolToEquip)
+    end
+end
+
+local function unequipBat()
+    local currentTool = Character:FindFirstChildOfClass("Tool")
+    if currentTool and currentTool.Name:match("Bat") then
+        Humanoid:UnequipTools()
+    end
+end
+
+local function teleportToBrainrot(brainrot)
+    if not brainrot.PrimaryPart then return end
+    local targetCFrame = CFrame.new(brainrot.PrimaryPart.Position + Vector3.new(0, 3, 0))
+    HumanoidRootPart.CFrame = targetCFrame * (HumanoidRootPart.CFrame - HumanoidRootPart.CFrame.Position)
+end
+
+local function farmLoop()
+    if os.clock() - lastActionTime < actionInterval then
+        return
+    end
+    lastActionTime = os.clock()
+    
+    local nearestTarget, targetId = getNearestBrainrot()
+
+    if nearestTarget and targetId then
+        equipBat()
+        teleportToBrainrot(nearestTarget)
+        local attackArgs = {
+            NormalBrainrots = {},
+            MissionBrainrots = {
+                [1] = targetId 
+            }
+        }
+        ReplicatedStorage.Remotes.AttacksServer.WeaponAttack:FireServer(attackArgs)
+    else
+        unequipBat()
+        updateBrainrotsCache()
+    end
+end
+
+local AutoFarmToggle = FarmTab:Toggle({
+    Title = "Auto Farm Brainrots",
+    Default = false,
+    Flag = "AutoFarmBrainrotsToggle",
+    Callback = function(state)
+        farmConfig.enabled = state
+        if farmConfig.enabled then
+            updateBrainrotsCache()
+            if not farmConnection then
+                farmConnection = game:GetService("RunService").Heartbeat:Connect(farmLoop)
+            end
+        else
+            if farmConnection then
+                farmConnection:Disconnect()
+                farmConnection = nil
+            end
+            unequipBat()
+        end
+    end
+})
+
+local AutoFarmDropdown1 = FarmTab:Dropdown({
+    Title = "Select Brainrots",
+    Values = allBrainrotNames,
+    SearchBarEnabled = true,
+    Default = {},
+    Multi = true,
+    AllowNone = true,
+    Flag = "AutoFarmDropdown1",
+    Callback = function(options)
+        farmConfig.targetNames = options
+    end
+})
+
+local AutoFarmDropdown2 = FarmTab:Dropdown({
+    Title = "Select Rarity",
+    Values = allRarities,
+    SearchBarEnabled = true,
+    Default = {},
+    Multi = true,
+    AllowNone = true,
+    Flag = "AutoFarmDropdown2",
+    Callback = function(options)
+        farmConfig.targetRarities = options
+    end
+})
+
+local autoEquipEnabled = false
+local equipDelay = 2.5
+
+local AutoEquipBestBrainrotsToggle = FarmTab:Toggle({
+    Title = "Auto Equip Best Brainrots",
+    Default = false,
+    Flag = "AutoEquipBestBrainrotsToggle",
+    Callback = function(state)
+        autoEquipEnabled = state
+
+        if autoEquipEnabled then
+            task.spawn(function()
+                while autoEquipEnabled do
+                    ReplicatedStorage.Remotes.EquipBestBrainrots:FireServer()
+                    task.wait(equipDelay)
+                end
+            end)
+        end
+    end
+})
+
+local BagTab = Window:Tab({Title = "Inventory",Icon = "backpack",Locked = false,})
+local Section = BagTab:Section({ Title = "Auto Open Card Pack:",Icon = "user-round-cog",TextXAlignment = "Left",TextSize = 17,})
+
+local autoEquipCardPackEnabled = false
+local TARGET_CARD_PACK_SUFFIX = nil
+local cardPackTypes = { "Base Card Pack", "Shiny Base Card Pack", "Halloween Card Pack" }
+
+local lastClickTime = 0
+local CLICK_COOLDOWN = 0.1
+
+local cleanupClickEndTime = nil 
+
+local function simulateScreenCenterClick()
+    local now = tick()
+    if now - lastClickTime < CLICK_COOLDOWN then return end
+    lastClickTime = now
+    local viewportSize = workspace.CurrentCamera.ViewportSize
+    local centerPosition = Vector2.new(viewportSize.X / 2, viewportSize.Y / 2)
+    VirtualInputManager:SendMouseButtonEvent(centerPosition.X, centerPosition.Y, 0, true, game, 1)
+    task.wait()
+    VirtualInputManager:SendMouseButtonEvent(centerPosition.X, centerPosition.Y, 0, false, game, 1)
+end
+
+local function forceEquipAndClick()
+    if not TARGET_CARD_PACK_SUFFIX then
+        return 
+    end
+
+    local currentTool = Character:FindFirstChildOfClass("Tool")
+    local toolIsInHand = currentTool and string.find(string.lower(currentTool.Name), string.lower(TARGET_CARD_PACK_SUFFIX))
+
+    if toolIsInHand then
+        cleanupClickEndTime = nil 
+        simulateScreenCenterClick()
+        return
+    end
+
+    local toolToEquip = nil
+    for _, tool in ipairs(Backpack:GetChildren()) do
+        if tool:IsA("Tool") and string.find(string.lower(tool.Name), string.lower(TARGET_CARD_PACK_SUFFIX)) then
+            toolToEquip = tool
+            break
+        end
+    end
+    
+    if toolToEquip then
+        cleanupClickEndTime = nil
+        Humanoid:EquipTool(toolToEquip)
+        return
+    end
+
+    if not toolToEquip then
+        if not cleanupClickEndTime then
+            cleanupClickEndTime = tick() + 10
+        end
+
+        if tick() < cleanupClickEndTime then
+            simulateScreenCenterClick()
+        end
+    end
+end
+
+RunService.Heartbeat:Connect(function()
+    if not autoEquipCardPackEnabled then return end
+    forceEquipAndClick()
+end)
+
+local AutoOpenCardPackDropdown = BagTab:Dropdown({
+    Title = "Select Card Pack",
+    Values = cardPackTypes,
+    Value = nil,
+    SearchBarEnabled = true,
+    AllowNone = true,
+    Flag = "AutoOpenCardPackDropdown",
+    Callback = function(selectedPack) 
+        cleanupClickEndTime = nil
+        if selectedPack == "None" or selectedPack == nil then
+            TARGET_CARD_PACK_SUFFIX = nil
+        else
+            TARGET_CARD_PACK_SUFFIX = selectedPack
+        end
+    end
+})
+
+local AutoOpenCardPackToggle = BagTab:Toggle({
+    Title = "Auto Open Card Pack",
+    Default = false,
+    Flag = "AutoOpenCardPackToggle",
+    Callback = function(state) 
+        autoEquipCardPackEnabled = state
+        
+        if not state then
+            cleanupClickEndTime = nil
+            local currentTool = Character:FindFirstChildOfClass("Tool")
+            if TARGET_CARD_PACK_SUFFIX and currentTool and string.find(string.lower(currentTool.Name), string.lower(TARGET_CARD_PACK_SUFFIX)) then
+                Humanoid:UnequipTools()
+            end
+        end
+    end
+})
+
+local Section = BagTab:Section({ Title = "Auto Open Egg:",Icon = "egg",TextXAlignment = "Left",TextSize = 17,})
+
+local OpenEggEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("OpenEgg")
+local eggTypes = { "Godly Lucky Egg", "Secret Lucky Egg", "Meme Lucky Egg", "Techno Egg", "Season 1 Egg" }
+local mutationTypes = {"Normal","Gold","Diamond","Frozen","Ruby","CandyCorn","Neon","Rainbow","UpsideDown","Magma","Underworld","Galactic","Pumpkin","Headless"}
+
+local autoHatchEggEnabled = false
+local TARGET_EGG_NAME = nil
+local TARGET_EGG_MUTATION = nil
+local REQUEST_COOLDOWN = 7.5
+
+local isHatchTaskRunning = false
+local requestHatchTaskEvent = Instance.new("BindableEvent")
+
+local function isOtherMutation(toolName)
+    for _, mutation in ipairs(mutationTypes) do
+        if mutation ~= "Normal" and string.find(toolName, "%[" .. mutation .. "%]", 1, false) then
+            return true
+        end
+    end
+    return false
+end
+
+local function startHatchTaskFlow()
+    if isHatchTaskRunning or not autoHatchEggEnabled then 
+        return 
+    end
+    
+    isHatchTaskRunning = true
+
+    task.spawn(function()
+        while autoHatchEggEnabled do
+            if TARGET_EGG_NAME and TARGET_EGG_MUTATION then
+                local currentTool = Character:FindFirstChildOfClass("Tool")
+                local toolIsInHand = false
+                if currentTool then
+                    local toolName = currentTool.Name
+                    if TARGET_EGG_MUTATION == "Normal" then
+                        if string.find(toolName, TARGET_EGG_NAME, 1, true) and not isOtherMutation(toolName) then toolIsInHand = true end
+                    else
+                        if string.find(toolName, TARGET_EGG_NAME, 1, true) and string.find(toolName, TARGET_EGG_MUTATION, 1, true) then toolIsInHand = true end
+                    end
+                end
+
+                if not toolIsInHand then
+                    Humanoid:UnequipTools()
+                    task.wait(0.1)
+
+                    local toolToEquip = nil
+                    for _, tool in ipairs(Backpack:GetChildren()) do
+                        if tool:IsA("Tool") then
+                            local toolName = tool.Name
+                            local found = false
+                            if TARGET_EGG_MUTATION == "Normal" then
+                                if string.find(toolName, TARGET_EGG_NAME, 1, true) and not isOtherMutation(toolName) then found = true end
+                            else
+                                if string.find(toolName, TARGET_EGG_NAME, 1, true) and string.find(toolName, TARGET_EGG_MUTATION, 1, true) then found = true end
+                            end
+                            if found then toolToEquip = tool; break end
+                        end
+                    end
+                    
+                    if toolToEquip then
+                        Humanoid:EquipTool(toolToEquip)
+                        task.wait(0.5)
+                    else
+                        break
+                    end
+                end
+
+                OpenEggEvent:FireServer()
+                task.wait(REQUEST_COOLDOWN)
+            else
+                task.wait(1)
+            end
+        end
+
+        isHatchTaskRunning = false
+    end)
+end
+
+local AutoHatchEggDropdown1 = BagTab:Dropdown({
+    Title = "Select Mutation",
+    Values = mutationTypes,
+    Value = nil,
+    SearchBarEnabled = true,
+    Flag = "AutoHatchEggDropdown1",
+    AllowNone = true,
+    Callback = function(selectedMutation)
+        TARGET_EGG_MUTATION = (selectedMutation == "None" or selectedMutation == nil) and nil or selectedMutation
+        requestHatchTaskEvent:Fire()
+    end
+})
+
+local AutoHatchEggDropdown2 = BagTab:Dropdown({
+    Title = "Select Egg",
+    Values = eggTypes,
+    Value = nil,
+    SearchBarEnabled = true,
+    AllowNone = true,
+    Flag = "AutoHatchEggDropdown2",
+    Callback = function(selectedEgg) 
+        TARGET_EGG_NAME = (selectedEgg == "None" or selectedEgg == nil) and nil or selectedEgg
+        requestHatchTaskEvent:Fire()
+    end
+})
+
+local AutoHatchEggToggle = BagTab:Toggle({
+    Title = "Auto Hatch Egg",
+    Default = false,
+    Flag = "AutoHatchEggToggle",
+    Callback = function(state) 
+        autoHatchEggEnabled = state
+        if not state then
+            Humanoid:UnequipTools()
+        end
+        requestHatchTaskEvent:Fire()
+    end
+})
+
+requestHatchTaskEvent.Event:Connect(function()
+    startHatchTaskFlow()
+end)
+
+local Section = BagTab:Section({ Title = "Auto Open Crate:",Icon = "package",TextXAlignment = "Left",TextSize = 17,})
+
+local OpenCrateEvent = ReplicatedStorage.Remotes.OpenCrate
+local crateTypes = { "Candy Spooky Crate","Candy Brainrot Crate","Spooky Plant Crate","Outlaw Plant Crate","Season 1 Crate" }
+local autoOpenCrateEnabled = false
+local TARGET_CRATE_NAME = nil
+local REQUEST_COOLDOWN = 7.5
+
+local isCrateTaskRunning = false
+local requestCrateTaskEvent = Instance.new("BindableEvent")
+
+local function startCrateTaskFlow()
+    if isCrateTaskRunning or not autoOpenCrateEnabled then 
+        return 
+    end
+    
+    isCrateTaskRunning = true
+
+    task.spawn(function()
+        while autoOpenCrateEnabled do
+            if not TARGET_CRATE_NAME then
+                task.wait(1)
+            else
+                local currentTool = Character:FindFirstChildOfClass("Tool")
+                local toolIsInHand = currentTool and string.find(currentTool.Name, TARGET_CRATE_NAME, 1, true)
+
+                if not toolIsInHand then
+                    Humanoid:UnequipTools()
+                    task.wait(0.1)
+
+                    local toolToEquip = nil
+                    for _, tool in ipairs(Backpack:GetChildren()) do
+                        if tool:IsA("Tool") and string.find(tool.Name, TARGET_CRATE_NAME, 1, true) then
+                            toolToEquip = tool
+                            break
+                        end
+                    end
+                    
+                    if toolToEquip then
+                        Humanoid:EquipTool(toolToEquip)
+                        task.wait(0.5)
+                    else
+                        break
+                    end
+                end
+                
+                OpenCrateEvent:FireServer(TARGET_CRATE_NAME)
+                task.wait(REQUEST_COOLDOWN)
+            end
+        end
+
+        isCrateTaskRunning = false
+    end)
+end
+
+local AutoOpenCrateDropdown = BagTab:Dropdown({
+    Title = "Select Crate",
+    Values = crateTypes,
+    Value = nil,
+    SearchBarEnabled = true,
+    AllowNone = true,
+    Flag = "AutoOpenCrateDropdown",
+    Callback = function(selectedCrate) 
+        TARGET_CRATE_NAME = (selectedCrate == "None" or selectedCrate == nil) and nil or selectedCrate
+        requestCrateTaskEvent:Fire()
+    end
+})
+
+local AutoOpenCrateToggle = BagTab:Toggle({
+    Title = "Auto Open Crate",
+    Default = false,
+    Flag = "AutoOpenCrateToggle",
+    Callback = function(state) 
+        autoOpenCrateEnabled = state
+        if not state then
+            Humanoid:UnequipTools()
+        end
+        requestCrateTaskEvent:Fire()
+    end
+})
+
+requestCrateTaskEvent.Event:Connect(function()
+    startCrateTaskFlow()
+end)
+
+local AutoSellTab = Window:Tab({Title = "Brainrot",Icon = "brain",})
+local Section = AutoSellTab:Section({ Title = "Auto Sell Brainrots:",Icon = "trash-2",TextXAlignment = "Left",TextSize = 17,Opened = true,})
+
+local AutoSeller = {}
+AutoSeller.__index = AutoSeller
+
+function AutoSeller.new()
+    local self = setmetatable({}, AutoSeller)
+    self.config = {
+        enabled = false,
+        targetNames = {},
+        targetRarities = {},
+        targetMutations = {},
+        maxKg = math.huge,
+        fireRate = 0.03,
+        scanInterval = 0.5
+    }
+    self.backpackBrainrots = {}
+    self.sellQueue = {}
+    self.rarityLookup = {}
+    self:_initializeData()
+    self:_connectEvents()
+    self:_startThreads()
+    return self
+end
+
+function AutoSeller:_initializeData()
+    for rarity, names in pairs(BrainrotList or {}) do
+        for _, name in ipairs(names) do
+            self.rarityLookup[name] = rarity
+        end
+    end
+end
+
+function AutoSeller:_connectEvents()
+    Backpack.ChildAdded:Connect(function(item) self:_updateBrainrotSnapshot(item, "add") end)
+    Backpack.ChildRemoved:Connect(function(item) self:_updateBrainrotSnapshot(item, "remove") end)
+    for _, item in ipairs(Backpack:GetChildren()) do
+        self:_updateBrainrotSnapshot(item, "add")
+    end
+end
+
+function AutoSeller:_startThreads()
+    task.spawn(function() self:_producerThread() end)
+    task.spawn(function() self:_equipperThread() end)
+    task.spawn(function() self:_consumerThread() end)
+end
+
+function AutoSeller:_parseItemName(itemName)
+    local attributes = { baseName = nil, mutation = nil, weight = nil }
+    local mutation, weightStr, fullName = itemName:match("^%[(.+)%]%s*%[(.+)%]%s*(.*)$")
+    if not (mutation and weightStr and fullName) then
+        weightStr, fullName = itemName:match("^%[(.+)%]%s*(.*)$")
+        if not (weightStr and fullName) then return nil end
+        mutation = "Normal"
+    end
+    local weight = tonumber(weightStr:match("^(%d+%.?%d*)"))
+    if not weight then return nil end
+    attributes.mutation = mutation
+    attributes.weight = weight
+    attributes.baseName = fullName:match("^(.-)%s+[IVXLCDM]+$") or fullName
+    return attributes
+end
+
+function AutoSeller:_updateBrainrotSnapshot(item, action)
+    if action == "add" then
+        local attrs = self:_parseItemName(item.Name)
+        if attrs then self.backpackBrainrots[item] = attrs end
+    elseif action == "remove" then
+        self.backpackBrainrots[item] = nil
+        if self.sellQueue[item] then
+            self.sellQueue[item] = nil
+        end
+    end
+end
+
+function AutoSeller:_producerThread()
+    while true do
+        local currentInterval = self.config.enabled and self.config.scanInterval or 2.0
+        task.wait(currentInterval)
+        if self.config.enabled then
+            local hasAnyFilter = #self.config.targetNames > 0 or #self.config.targetRarities > 0 or #self.config.targetMutations > 0
+            if hasAnyFilter then
+                for item, attrs in pairs(self.backpackBrainrots) do
+                    if not self.sellQueue[item] then
+                        if attrs.weight < self.config.maxKg then
+                            local itemRarity = self.rarityLookup[attrs.baseName]
+                            local nameOrRarityPass = (#self.config.targetNames == 0 and #self.config.targetRarities == 0) or
+                                                     table.find(self.config.targetNames, attrs.baseName) or
+                                                     (itemRarity and table.find(self.config.targetRarities, itemRarity))
+                            local mutationPass = #self.config.targetMutations == 0 or table.find(self.config.targetMutations, attrs.mutation)
+                            if nameOrRarityPass and mutationPass then
+                                self.sellQueue[item] = true
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+function AutoSeller:_equipperThread()
+    while task.wait() do
+        if self.config.enabled then
+            local currentTool = Character:FindFirstChildOfClass("Tool")
+            if not currentTool or not self.sellQueue[currentTool] then
+                local nextItem = next(self.sellQueue)
+                if nextItem then
+                    Humanoid:EquipTool(nextItem)
+                end
+            end
+        end
+    end
+end
+
+function AutoSeller:_consumerThread()
+    while task.wait(self.config.fireRate) do
+        if self.config.enabled then
+            local currentTool = Character:FindFirstChildOfClass("Tool")
+            if currentTool and self.sellQueue[currentTool] then
+                pcall(function()
+                    if Humanoid.Health > 0 then
+                        game:GetService("ReplicatedStorage").Remotes.ItemSell:FireServer({[1] = true, [3] = true})
+                        self.sellQueue[currentTool] = nil
+                    end
+                end)
+            end
+        end
+    end
+end
+
+function AutoSeller:SetEnabled(enabled)
+    self.config.enabled = enabled
+    if not enabled then
+        for item in pairs(self.sellQueue) do
+            self.sellQueue[item] = nil
+        end
+    end
+end
+
+function AutoSeller:UpdateConfig(key, value)
+    if key == "maxKg" then
+        local num = tonumber(value)
+        self.config.maxKg = (num and num >= 0) and num or math.huge
+    elseif self.config[key] then
+        self.config[key] = value
+    end
+end
+
+local MyAutoSeller = AutoSeller.new()
+
+local allBrainrotNames, allRarities = {}, {}
+for rarity, names in pairs(BrainrotList or {}) do
+    table.insert(allRarities, rarity)
+    for _, name in ipairs(names) do
+        table.insert(allBrainrotNames, name)
+    end
+end
+table.sort(allRarities)
+table.sort(allBrainrotNames)
+local allMutations = {"Normal","Gold","Diamond","Frozen","Ruby","CandyCorn","Neon","Rainbow","UpsideDown","Magma","Underworld","Galactic","Pumpkin","Headless"}
+table.sort(allMutations)
+
+local AutoSellBrainrotToggle = AutoSellTab:Toggle({
+    Title = "Auto Sell Brainrot",
+    Flag = "AutoSellBrainrotToggle",
+    Callback = function(v)
+    end
+})
+
+local AutoSellBrainrotDropdown1 = AutoSellTab:Dropdown({
+    Title = "Select Brainrots",
+    Values = allBrainrotNames,
+    SearchBarEnabled = true,
+    Default = {},
+    Multi = true,
+    AllowNone = true,
+    Flag = "AutoSellBrainrotDropdown1",
+    Callback = function(options)
+    end
+})
+
+local AutoSellBrainrotDropdown2 = AutoSellTab:Dropdown({
+    Title = "Select Rarity",
+    Values = allRarities,
+    SearchBarEnabled = true,
+    Default = {},
+    Multi = true,
+    AllowNone = true,
+    Flag = "AutoSellBrainrotDropdown2",
+    Callback = function(options)
+    end
+})
+
+local AutoSellBrainrotDropdown3 = AutoSellTab:Dropdown({
+    Title = "Select Mutations",
+    Values = allMutations,
+    SearchBarEnabled = true,
+    Default = {},
+    Multi = true,
+    AllowNone = true,
+    Flag = "AutoSellBrainrotDropdown3",
+    Callback = function(options)
+    end
+})
+
+local AutoSellBrainrotInput = AutoSellTab:Input({
+    Title = "Sell Below Weight",
+    Default = "",
+    Flag = "AutoSellBrainrotInput",
+    Callback = function(value)
+    end
+})
+
+local ShopTab = Window:Tab({Title = "Shop",Icon = "shopping-cart",Locked = false,})
+local Section = ShopTab:Section({Title = "Seed Shop:",Icon = "sprout",TextXAlignment = "Left",TextSize = 17,})
+
+local SeedsFolder = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Seeds")
+local BuyItem = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("BuyItem")
+local UpdatePlantStocks = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("UpdatePlantStocks")
+
+local SEED_NAMES = {
+    "Cactus Seed", "Strawberry Seed", "Pumpkin Seed", "Sunflower Seed",
+    "Dragon Fruit Seed", "Eggplant Seed", "Watermelon Seed", "Grape Seed",
+    "Cocotank Seed", "Carnivorous Plant Seed", "Mr Carrot Seed", "Tomatrio Seed",
+    "Shroombino Seed", "Mango Seed", "King Limone Seed", "Starfruit Seed"
+}
+
+local TARGET_SEEDS = {}
+for _, name in ipairs(SEED_NAMES) do
+    TARGET_SEEDS[name] = true
+end
+
+local lastInventory = {}
+local buyingSeeds = false
+local selectedSeedsSet = {}
+local autoBuySelectedSeeds = false
+local autoBuyAllSeeds = false
+
+local function getCurrentInventory()
+    local result = {}
+    for _, seed in ipairs(SeedsFolder:GetChildren()) do
+        if TARGET_SEEDS[seed.Name] then
+            result[seed.Name] = seed:GetAttribute("Stock") or 0
+        end
+    end
+    return result
+end
+
+local function isDifferent(old, new)
+    for _, name in ipairs(SEED_NAMES) do
+        if old[name] ~= new[name] then
+            return true
+        end
+    end
+    return false
+end
+
+local function startSeedPurchaseFlow()
+    if buyingSeeds then return end
+    buyingSeeds = true
+
+    spawn(function()
+        local currentInventory = getCurrentInventory()
+        for _, seedName in ipairs(SEED_NAMES) do
+            local shouldBuy = autoBuyAllSeeds or (autoBuySelectedSeeds and selectedSeedsSet[seedName])
+            if shouldBuy then
+                local stock = currentInventory[seedName] or 0
+                while stock > 0 do
+                    BuyItem:FireServer(seedName, true)
+                    task.wait(0.2)
+                    stock = stock - 1
+                end
+            end
+        end
+        buyingSeeds = false
+    end)
+end
+
+local function startListening(onInventoryChanged)
+    lastInventory = getCurrentInventory()
+    onInventoryChanged(lastInventory)
+
+    local function update()
+        local newInv = getCurrentInventory()
+        if isDifferent(lastInventory, newInv) then
+            lastInventory = newInv
+            task.spawn(function()
+                task.wait(1)
+                onInventoryChanged(newInv)
+            end)
+        end
+    end
+
+    SeedsFolder.ChildAdded:Connect(update)
+    SeedsFolder.ChildRemoved:Connect(update)
+
+    for _, seed in ipairs(SeedsFolder:GetChildren()) do
+        seed.AttributeChanged:Connect(function(attr)
+            if attr == "Stock" then
+                update()
+            end
+        end)
+    end
+
+    UpdatePlantStocks.OnClientEvent:Connect(function()
+        task.spawn(function()
+            task.wait(1)
+            onInventoryChanged(getCurrentInventory())
+        end)
+    end)
+end
+
+startListening(startSeedPurchaseFlow)
+
+local SeedsDropdown = ShopTab:Dropdown({
+    Title = "Select Seeds",
+    Values = SEED_NAMES,
+    SearchBarEnabled = true,
+    Default = {},
+    Multi = true,
+    AllowNone = true,
+    Flag = "SeedsDropdown",
+    Callback = function(options)
+        selectedSeedsSet = {}
+        for _, seedName in ipairs(options) do
+            selectedSeedsSet[seedName] = true
+        end
+        startSeedPurchaseFlow()
+    end
+})
+
+local AutoBuySeedsToggle = ShopTab:Toggle({
+    Title = "Auto Buy Seeds",
+    Default = false,
+    Flag = "AutoBuySeedsToggle",
+    Callback = function(state)
+        autoBuySelectedSeeds = state
+        startSeedPurchaseFlow()
+    end
+})
+
+local AutoBuyAllSeedsToggle = ShopTab:Toggle({
+    Title = "Auto Buy All Seeds",
+    Default = false,
+    Flag = "AutoBuyAllSeedsToggle",
+    Callback = function(state)
+        autoBuyAllSeeds = state
+        startSeedPurchaseFlow()
+    end
+})
+
+local Section = ShopTab:Section({ Title = "Gear Shop:",Icon = "wrench",TextXAlignment = "Left",TextSize = 17,})
+
+local GearsFolder = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Gears")
+local BuyGear = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("BuyGear")
+local UpdateGearStocks = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("UpdateGearStocks")
+
+local GEAR_NAMES = {"Water Bucket","Frost Grenade","Banana Gun","Frost Blower","Carrot Launcher"}
+
+local TARGET_GEARS = {}
+for _, name in ipairs(GEAR_NAMES) do
+    TARGET_GEARS[name] = true
+end
+
+local lastInventory = {}
+local buyingGears = false
+local selectedGearsSet = {}
+local autoBuySelectedGears = false
+local autoBuyAllGears = false
+
+local function getCurrentInventory()
+    local result = {}
+    for _, gear in ipairs(GearsFolder:GetChildren()) do
+        if TARGET_GEARS[gear.Name] then
+            result[gear.Name] = gear:GetAttribute("Stock") or 0
+        end
+    end
+    return result
+end
+
+local function isDifferent(old, new)
+    for _, name in ipairs(GEAR_NAMES) do
+        if old[name] ~= new[name] then
+            return true
+        end
+    end
+    return false
+end
+
+local function startGearPurchaseFlow()
+    if buyingGears then return end
+    buyingGears = true
+
+    spawn(function()
+        local currentInventory = getCurrentInventory()
+        for _, gearName in ipairs(GEAR_NAMES) do
+            local shouldBuy = autoBuyAllGears or (autoBuySelectedGears and selectedGearsSet[gearName])
+            if shouldBuy then
+                local stock = currentInventory[gearName] or 0
+                while stock > 0 do
+                    BuyGear:FireServer(gearName, true)
+                    task.wait(0.2)
+                    stock = stock - 1
+                end
+            end
+        end
+        buyingGears = false
+    end)
+end
+
+local function startListening(onInventoryChanged)
+    lastInventory = getCurrentInventory()
+    onInventoryChanged(lastInventory)
+
+    local function update()
+        local newInv = getCurrentInventory()
+        if isDifferent(lastInventory, newInv) then
+            lastInventory = newInv
+            task.spawn(function()
+                task.wait(1)
+                onInventoryChanged(newInv)
+            end)
+        end
+    end
+
+    GearsFolder.ChildAdded:Connect(update)
+    GearsFolder.ChildRemoved:Connect(update)
+
+    for _, gear in ipairs(GearsFolder:GetChildren()) do
+        gear.AttributeChanged:Connect(function(attr)
+            if attr == "Stock" then
+                update()
+            end
+        end)
+    end
+
+    UpdateGearStocks.OnClientEvent:Connect(function()
+        task.spawn(function()
+            task.wait(1)
+            onInventoryChanged(getCurrentInventory())
+        end)
+    end)
+end
+
+startListening(startGearPurchaseFlow)
+
+local GearsDropdown = ShopTab:Dropdown({
+    Title = "Select Gears",
+    Values = GEAR_NAMES,
+    SearchBarEnabled = true,
+    Default = {},
+    Multi = true,
+    AllowNone = true,
+    Flag = "GearsDropdown",
+    Callback = function(options)
+        selectedGearsSet = {}
+        for _, gearName in ipairs(options) do
+            selectedGearsSet[gearName] = true
+        end
+        startGearPurchaseFlow()
+    end
+})
+
+local AutoBuyGearsToggle = ShopTab:Toggle({
+    Title = "Auto Buy Gears",
+    Default = false,
+    Flag = "AutoBuyGearsToggle",
+    Callback = function(state)
+        autoBuySelectedGears = state
+        startGearPurchaseFlow()
+    end
+})
+
+local AutoBuyAllGearsToggle = ShopTab:Toggle({
+    Title = "Auto Buy All Gears",
+    Default = false,
+    Flag = "AutoBuyAllGearsToggle",
+    Callback = function(state)
+        autoBuyAllGears = state
+        startGearPurchaseFlow()
+    end
+})
+
+do
+    local ConfigManager = Window.ConfigManager
+    local ConfigName = "default"
+
+    task.spawn(function()
+        Window.CurrentConfig = ConfigManager:CreateConfig(ConfigName)
+        Window.CurrentConfig:Load()
+    end)
+
+    if Player then
+        Players.PlayerRemoving:Connect(function(playerWhoLeft)
+            if playerWhoLeft == Player then
+                if Window and Window.Parent then
+                    Window.CurrentConfig = ConfigManager:CreateConfig(ConfigName)
+                    Window.CurrentConfig:Save()
+                end
+            end
+        end)
+    end
+end
